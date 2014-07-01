@@ -2,7 +2,6 @@ package com.agilefreaks.calin.securityflaxexample;
 
 import android.util.Log;
 
-import java.security.Security;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -22,15 +21,8 @@ Build abstractions that are hard to use insecurely
 Add a enum
  */
 
-/*
-Expanding the bounds of values for our security level, increases complexity
- */
-
 public class StorageStrategy {
-  public static final int MAX_SECURITY = 1;
-  public static final int NO_SECURITY = 0;
-  public static final int REQUIRE_ENCRYPTION = 3;
-
+  public enum Security {MAX, NONE}
 
   private interface StorageHandler {
     public void store(String key, String data);
@@ -59,10 +51,10 @@ public class StorageStrategy {
     handlerMapping.put("public", new PublicStoreAdapter());
   }
 
-  public void storeData(String key, String data, int security) {
+  public void storeData(String key, String data, Security security) {
     StorageHandler storageHandler;
 
-    if (security < REQUIRE_ENCRYPTION) {
+    if (security == Security.NONE) {
       storageHandler = getPublicHandler();
     } else {
       storageHandler = getSecureHandler();
@@ -80,11 +72,11 @@ public class StorageStrategy {
   }
 
   public void saveSettings() {
-    storeData("name", "private stuff", MAX_SECURITY);
-    storeData("private.groups", "some more private stuff", MAX_SECURITY);
-    storeData("address", "private address", MAX_SECURITY);
+    storeData("name", "private stuff", Security.MAX);
+    storeData("private.groups", "some more private stuff", Security.MAX);
+    storeData("address", "private address", Security.MAX);
 
-    storeData("profilephoto", "public info", NO_SECURITY);
-    storeData("homepageurl", "public info", NO_SECURITY);
+    storeData("profilephoto", "public info", Security.NONE);
+    storeData("homepageurl", "public info", Security.NONE);
   }
 }
