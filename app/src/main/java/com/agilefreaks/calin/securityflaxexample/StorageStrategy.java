@@ -13,15 +13,19 @@ Things to consider:
 - separate and protect security state
  */
 
+/*
+Build abstractions that are hard to use insecurely
+ */
+
 public class StorageStrategy {
   private interface StorageHandler {
-    public void store(String data);
+    public void store(String key, String data);
   }
 
   private class PublicStoreAdapter implements StorageHandler {
 
     @Override
-    public void store(String data) {
+    public void store(String key, String data) {
       Log.d("PublicStoreAdapter", "Store on sdcard");
     }
   }
@@ -29,7 +33,7 @@ public class StorageStrategy {
   private class PrivateStoreAdapter implements StorageHandler {
 
     @Override
-    public void store(String data) {
+    public void store(String key, String data) {
       Log.d("PublicStoreAdapter", "Store on private folder");
     }
   }
@@ -41,17 +45,17 @@ public class StorageStrategy {
     handlerMapping.put("public", new PublicStoreAdapter());
   }
 
-  public void storeData(String key, String data, Boolean isSecure) {
+  public void storeData(String key, String data, Boolean isPublic) {
     StorageHandler storageHandler;
 
-    if (isSecure) {
-      storageHandler = getSecureHandler();
-    }
-    else {
+    if (isPublic) {
       storageHandler = getPublicHandler();
     }
+    else {
+      storageHandler = getSecureHandler();
+    }
 
-    storageHandler.store(data);
+    storageHandler.store(key, data);
   }
 
   private StorageHandler getPublicHandler() {
