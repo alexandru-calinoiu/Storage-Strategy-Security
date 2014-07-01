@@ -21,9 +21,13 @@ Build abstractions that are hard to use insecurely
 Add a enum
  */
 
-public class StorageStrategy {
-  public enum Security {MAX, NONE}
+/*
+Avoid conditional logic
+- easier to test
+- semantics are clear
+ */
 
+public class StorageStrategy {
   private interface StorageHandler {
     public void store(String key, String data);
   }
@@ -51,16 +55,12 @@ public class StorageStrategy {
     handlerMapping.put("public", new PublicStoreAdapter());
   }
 
-  public void storeData(String key, String data, Security security) {
-    StorageHandler storageHandler;
+  public void storeDataPublic(String key, String data) {
+    getPublicHandler().store(key, data);
+  }
 
-    if (security == Security.NONE) {
-      storageHandler = getPublicHandler();
-    } else {
-      storageHandler = getSecureHandler();
-    }
-
-    storageHandler.store(key, data);
+  public void storeDataSecure(String key, String data) {
+    getSecureHandler().store(key, data);
   }
 
   private StorageHandler getPublicHandler() {
@@ -72,11 +72,11 @@ public class StorageStrategy {
   }
 
   public void saveSettings() {
-    storeData("name", "private stuff", Security.MAX);
-    storeData("private.groups", "some more private stuff", Security.MAX);
-    storeData("address", "private address", Security.MAX);
+    storeDataSecure("name", "private stuff");
+    storeDataSecure("private.groups", "some more private stuff");
+    storeDataSecure("address", "private address");
 
-    storeData("profilephoto", "public info", Security.NONE);
-    storeData("homepageurl", "public info", Security.NONE);
+    storeDataPublic("profilephoto", "public info");
+    storeDataPublic("homepageurl", "public info");
   }
 }
