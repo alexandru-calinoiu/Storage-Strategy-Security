@@ -2,9 +2,6 @@ package com.agilefreaks.calin.securityflaxexample;
 
 import android.util.Log;
 
-import java.util.HashMap;
-import java.util.Map;
-
 /*
 Things to consider:
 - clarity with respect to security (we want to look at a abstraction and the security model should be very clear)
@@ -25,6 +22,16 @@ Add a enum
 Avoid conditional logic
 - easier to test
 - semantics are clear
+ */
+
+/*
+Prevent Secure pathways from being broken at runtime:
+- the hash is not immutable
+- easier to test
+- and compile time
+
+- tightly coupleled the code, we are still using the storage handler interface, we are being smart about where we apply the de-coupling
+- modular in the right places
  */
 
 public class StorageStrategy {
@@ -48,11 +55,7 @@ public class StorageStrategy {
     }
   }
 
-  private Map<String, StorageHandler> handlerMapping = new HashMap<String, StorageHandler>();
-
   public StorageStrategy() {
-    handlerMapping.put("private", new PrivateStoreAdapter());
-    handlerMapping.put("public", new PublicStoreAdapter());
   }
 
   public void storeDataPublic(String key, String data) {
@@ -64,11 +67,11 @@ public class StorageStrategy {
   }
 
   private StorageHandler getPublicHandler() {
-    return handlerMapping.get("public");
+    return new PublicStoreAdapter();
   }
 
   private StorageHandler getSecureHandler() {
-    return handlerMapping.get("private");
+    return new PrivateStoreAdapter();
   }
 
   public void saveSettings() {
