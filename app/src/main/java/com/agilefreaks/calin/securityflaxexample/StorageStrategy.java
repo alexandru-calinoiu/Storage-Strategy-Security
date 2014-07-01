@@ -17,7 +17,13 @@ Things to consider:
 Build abstractions that are hard to use insecurely
  */
 
+/*
+Add a enum
+ */
+
 public class StorageStrategy {
+  public enum Security {MAX, NONE}
+
   private interface StorageHandler {
     public void store(String key, String data);
   }
@@ -45,13 +51,12 @@ public class StorageStrategy {
     handlerMapping.put("public", new PublicStoreAdapter());
   }
 
-  public void storeData(String key, String data, Boolean isPublic) {
+  public void storeData(String key, String data, Security security) {
     StorageHandler storageHandler;
 
-    if (isPublic) {
+    if (security == Security.NONE) {
       storageHandler = getPublicHandler();
-    }
-    else {
+    } else {
       storageHandler = getSecureHandler();
     }
 
@@ -67,11 +72,11 @@ public class StorageStrategy {
   }
 
   public void saveSettings() {
-    storeData("name", "private stuff", true);
-    storeData("private.groups", "some more private stuff", true);
-    storeData("address", "private address", true);
+    storeData("name", "private stuff", Security.MAX);
+    storeData("private.groups", "some more private stuff", Security.MAX);
+    storeData("address", "private address", Security.MAX);
 
-    storeData("profilephoto", "public info", false);
-    storeData("homepageurl", "public info", false);
+    storeData("profilephoto", "public info", Security.NONE);
+    storeData("homepageurl", "public info", Security.NONE);
   }
 }
