@@ -5,6 +5,14 @@ import android.util.Log;
 import java.util.HashMap;
 import java.util.Map;
 
+/*
+Things to consider:
+- clarity with respect to security (we want to look at a abstraction and the security model should be very clear)
+- catch flaws at compile time
+- proper usage to be obvious
+- separate and protect security state
+ */
+
 public class StorageStrategy {
   private interface StorageHandler {
     public void store(String data);
@@ -29,23 +37,37 @@ public class StorageStrategy {
   private Map<String, StorageHandler> handlerMapping = new HashMap<String, StorageHandler>();
 
   public StorageStrategy() {
-    handlerMapping.put("puser", new PrivateStoreAdapter());
-    handlerMapping.put("group", new PublicStoreAdapter());
+    handlerMapping.put("private", new PrivateStoreAdapter());
+    handlerMapping.put("public", new PublicStoreAdapter());
   }
 
-  public void storeData(String key, String data) {
-    int start = key.indexOf(".");
-    String type = key.substring(start + 1, start + 6);
+  public void storeData(String key, String data, Boolean isSecure) {
+    StorageHandler storageHandler;
 
-    handlerMapping.get(type).store(data);
+    if (isSecure) {
+      storageHandler = getSecureHandler();
+    }
+    else {
+      storageHandler = getPublicHandler();
+    }
+
+    storageHandler.store(data);
+  }
+
+  private StorageHandler getPublicHandler() {
+    return handlerMapping.get("public");
+  }
+
+  private StorageHandler getSecureHandler() {
+    return handlerMapping.get("private");
   }
 
   public void saveSettings() {
-    storeData("name.puser", "private stuff");
-    storeData("private.groups.puser", "some more private stuff");
-    storeData("address.puser", "private address");
+    storeData("name", "private stuff", true);
+    storeData("private.groups", "some more private stuff", true);
+    storeData("address", "private address", true);
 
-    storeData("profilephoto.group", "public info");
-    storeData("homepageurl.group", "public info");
+    storeData("profilephoto", "public info", false);
+    storeData("homepageurl", "public info", false);
   }
 }
